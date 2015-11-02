@@ -11,11 +11,14 @@ if [ $# -ne 2 ]
 	then
 		echo "Usage: $0 leftvideofile rightvideofile"
 		exit 1
+fi
+
 if [ ! -r $1 ]
 	then	
 		echo "Can't read left video?"
 		exit 2
 fi
+
 if [ ! -r $2 ]
 	then
 		echo "Can't read right video?"
@@ -60,9 +63,10 @@ case ${RFR} in
 esac
 
 
-LOF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 | awk ' { print $1 } ')
-ROF=$(python2 ${CLPR} -c -r ${LFR} $2 $1 | tail -1 | awk ' { print $1 } ')
+LOF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 | awk ' { print $1 } ' |cut -d: -f4)
+ROF=$(python2 ${CLPR} -c -r ${LFR} $2 $1 | tail -1 | awk ' { print $1 } ' |cut -d: -f4)
 
+# Trim video edges...on super wide angles should help the final rendering look better...
 #ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:107:60" Left-$$.mp4 
 #ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:107:60" Rigt-$$.mp4 
 
