@@ -1,4 +1,4 @@
-# sync-o-pater
+# sync-o-tater
 merge two videos into one side-by-side audio-synced 3 d monstrosity.
 
 Requires ffmpeg (with h264 support at the moment)
