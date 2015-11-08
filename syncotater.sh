@@ -7,9 +7,9 @@ CLPR=~/clapperless.py
 
 # boring test stuff
 
-if [ $# -ne 2 ]
+if [ $# -lt 2 ]  || [ $# -gt 3 ]
 	then
-		echo "Usage: $0 leftvideofile rightvideofile"
+		echo "Usage: $0 leftvideofile rightvideofile [optional: clapperless path]"
 		exit 1
 fi
 
@@ -23,6 +23,11 @@ if [ ! -r $2 ]
 	then
 		echo "Can't read right video?"
 		exit 2
+fi
+
+if [ $# -eq 3 ]
+	then
+		CLPR=$3
 fi
 
 if [ -x $CLPR ]
@@ -67,8 +72,8 @@ LOF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 | awk ' { print $1 } ' |cut -
 ROF=$(python2 ${CLPR} -c -r ${LFR} $2 $1 | tail -1 | awk ' { print $1 } ' |cut -d: -f4)
 
 # Trim video edges...on super wide angles should help the final rendering look better...
-#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:107:60" Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:107:60" Rigt-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:112:60" Left-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:102:60" Rigt-$$.mp4 
 
 #
 #ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
