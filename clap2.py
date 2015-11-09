@@ -21,6 +21,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# 2015-11-09 edited to output only frame offsets for scripting purposes. 
+
 import logging, time, struct, subprocess, sys, os, array, argparse
 import stat, tempfile, hashlib, re
 
@@ -407,9 +409,10 @@ def process_files(args):
 
         if args.timecheck:
             control = offset_t - e.datetime + med
-            print("%10.2f\t%10.2f\t%10.2f%10.2f\t%10.2f\t" % (e.offset,offset_t, offset_f, e.datetime, med))
+            print("%4.0f\t%4.3f\t%s" % (e.offset,e.offset,
+                              os.path.basename(e.filename)))
         else:
-            print("%4.3f\t%s\t%s" % (e.offset,offset_str,
+            print("%4.0f\t%4.3f\t%s" % (e.offset,e.offset,
                               os.path.basename(e.filename)))
 
             
