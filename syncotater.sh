@@ -67,13 +67,17 @@ case ${RFR} in
 
 esac
 
+LFC=$(ffprobe -i $1 -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
+RFC=$(ffprobe -i $2 -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 
 LOF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 | awk ' { print $1 } ' |cut -d: -f4)
 ROF=$(python2 ${CLPR} -c -r ${LFR} $2 $1 | tail -1 | awk ' { print $1 } ' |cut -d: -f4)
 
 # Trim video edges...on super wide angles should help the final rendering look better...
-#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:112:60" Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:102:60" Rigt-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:107:60" Left-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:107:60" Rigt-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:110:60" Left-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:104:60" Rigt-$$.mp4 
 
 #
 #ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
