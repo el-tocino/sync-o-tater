@@ -76,6 +76,14 @@ FOFF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 |awk ' { print $1 } ')
 
 # Using the second number's decimals would give a relative quality assessment. Closer to .5, the worse the offset.  
 
+#Offset would be A_n = B_1. A has X items, B has Y.
+#If (n = 0 && X = Y) then Booya!
+#If n < 0 then (swap [A,B], absval(n)).
+#If (X - n = Y ) then trim A to [A_n -> X]
+#If (X - n > Y ) then trim A to [A_n -> (A_n + Y)]
+#If (X - n < Y ) then trim B to [B_1 -> (Y - (Y - A_n))] and trim A to [A_n -> X]
+
+
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
 # 1920x1080 -> 1706x960
