@@ -83,7 +83,25 @@ FOFF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 |awk ' { print $1 } ')
 #If (X - n > Y ) then trim A to [A_n -> (A_n + Y)]
 #If (X - n < Y ) then trim B to [B_1 -> (Y - (Y - A_n))] and trim A to [A_n -> X]
 
+if [ ${FOFF} -ne 0 ] 
+	then
 
+		if [ ${FOFF} -lt 0 ]
+			then
+				FOFF=$(( 0 - ${FOFF}))
+				SORT_ORDER=2
+			else
+				SORT_ORDER=1
+			fi
+	
+
+	else
+		if [ ${LFC} -ne ${RFC} ]
+			then
+
+
+			fi	
+	
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
 # 1920x1080 -> 1706x960
