@@ -1,15 +1,16 @@
 #!/bin/bash
 # $1 = left video
 # $2 = right video
+# $3 = outputfile
+# $4 = sync utility (clapperless/clap2)
 
-#adjust to point at your copy
 CLPR=~/clapperless.py
 
 # boring test stuff
 
-if [ $# -lt 2 ]  || [ $# -gt 3 ]
+if [ $# -lt 3 ]  || [ $# -gt 4 ]
 	then
-		echo "Usage: $0 leftvideofile rightvideofile [optional: clapperless path]"
+		echo "Usage: $0 leftvideofile rightvideofile outputfile [optional: clapperless path]"
 		exit 1
 fi
 
@@ -25,15 +26,19 @@ if [ ! -r $2 ]
 		exit 2
 fi
 
-if [ $# -eq 3 ]
+if [ -r $3 ]
 	then
-		CLPR=$3
+		echo "$3 exists, cowardly refusing to try overwriting."
+		exit 3
+if [ $# -eq 4 ]
+	then
+		CLPR=$4
 fi
 
 if [ ! -r $CLPR ]
 	then
 		echo "Can't find clapperless!"
-		exit 3
+		exit 4
 fi
 
 # find framerate of the videos
@@ -44,26 +49,57 @@ RFR=$(exiftool -VideoFrameRate $2 | awk ' { print $NF} ' )
 if [ $LFR != $RFR ]
 	then
 		echo "Differing frame rates. This tool needs matched frame rates for now."
-		exit 4 
+		exit 5 
 fi
 
-# clapperless hates fractional framerates.
+# clapperless hates fractional framerates. Set framerate as whole number, but keep frame interval time at actual frame rate interval.
+
 case ${RFR} in
+	"24")
+		FR_IVAL="0.04166666666"
+		;;
+	"25")
+		FR_IVAL="0.04"
+		;;
 	"29.97")
 		LFR=30
+		FR_IVAL="0.03336670003"
+		;;
+	"30")
+		FR_IVAL="0.03333333333"
 		;;
 	"59.94")
 		LFR=60
+		FR_IVAL="0.01668335001"
+		;;
+	"60")
+		FR_IVAL="0.01666666666"
 		;;
 	"47.8")
 		LFR=48
+		FR_IVAL="0.02092050209"
+		;;
+	"48")
+		FR_IVAL="0.02083333333"
 		;;
 	"119.88")
 		LFR=120
+		FR_IVAL="0.008341675"
+		;;
+	"120")
+		FR_IVAL="0.00833333333"
 		;;
 	"239.76")
 		LFR=240
-	;;
+		FR_IVAL="0.0041708375"
+		;;
+	"240")
+		FR_IVAL=".00416666666"
+		;;
+	*)
+		echo "Unknown frame rate? Edit script and add values, add a commit to git..."
+		exit 6
+		;;
 
 esac
 
@@ -107,6 +143,9 @@ if [ ${FOFF} -ne 0 ]
 			fi	
 	
 	fi
+
+echo "LFR RFR LFC RFC FOFF"
+echo "$LFR $RFR $LFC $RFC $FOFF"
 	
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
@@ -114,11 +153,17 @@ if [ ${FOFF} -ne 0 ]
 # 1280x720 -> 1138x640
 # 2k -> ?
 # other -> ???
-#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:107:60" Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:107:60" Rigt-$$.mp4 
+# Crop args:
+# LCROPARGS=' -filter:v "crop=1706:960:107:60"'
+# RCROPARGS=${LCROPARGS}
+# Shifted crop args:
+# LCROPARGS=' -filter:v "crop=1706:960:110:60"'
+# RCROPARGS=' -filter:v "crop=1706:960:104:60"' 
+#ffmpeg -strict -2 -codec h264 -i $1 ${LTRIMARGS} ${LCROPARGS} Left-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $2 ${RTRIMARGS} ${RCROPARGS} Right-$$.mp4 
 # on 1080p and wide angle video, offset cropping could make aligning a bit better as well. 
-#ffmpeg -strict -2 -codec h264 -i $1 -filter:v "crop=1706:960:110:60" Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 -filter:v "crop=1706:960:104:60" Rigt-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $1 ${LTRIMARGS} ${LCROPARGS} Left-$$.mp4 
+#ffmpeg -strict -2 -codec h264 -i $2 ${RTRIMARGS} ${RCROPARGS} Right-$$.mp4 
 
 #
 #ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
