@@ -119,9 +119,13 @@ FOFF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 |awk ' { print $1 } ')
 #If (X - n > Y ) then trim A to [A_n -> (A_n + Y)]
 #If (X - n < Y ) then trim B to [B_1 -> (Y - (Y - A_n))] and trim A to [A_n -> X]
 
-if [ ${FOFF} -ne 0 ] 
+if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 	then
-
+		LTRIMARGS=''
+		RTRIMARGS=''
+		echo "matching syncs and lengths!"
+	else
+	
 		if [ ${FOFF} -lt 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
@@ -131,25 +135,22 @@ if [ ${FOFF} -ne 0 ]
 				SORT_ORDER=1
 				echo "Normal sort order."
 			fi
-	
 
-	else
-		if [ ${LFC} -ne ${RFC} ]
+		LFCT = $(bc ${LFC} - ${FOFF})		
+		if [ ${LFCT} -eq ${RFC} ]
 			then
+				TRIM_TIME=$(bc ${FR_IVAL} * ${FOFF})	
+				LTRIMARGS="-ss ${TRIM_TIME}"	
+				RTRIMARGS=''
 
-				echo "Unequal frame counts."
-			else
-				echo "Equal frame counts."
-			fi	
-	
 	fi
 
 echo "LFR RFR LFC RFC FOFF"
-echo "$LFR $RFR $LFC $RFC $FOFF"
+echo "$LFR $RFR $LFC $RFC $FOFF "
 	
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
-# 1920x1080 -> 1706x960
+# 1920x1080 -> 1706x960 or 1600x900
 # 1280x720 -> 1138x640
 # 2k -> ?
 # other -> ???
