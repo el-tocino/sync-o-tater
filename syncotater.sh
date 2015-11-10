@@ -30,9 +30,9 @@ if [ $# -eq 3 ]
 		CLPR=$3
 fi
 
-if [ -x $CLPR ]
+if [ ! -r $CLPR ]
 	then
-		echo "Can't exec clapperless!"
+		echo "Can't find clapperless!"
 		exit 3
 fi
 
@@ -90,8 +90,10 @@ if [ ${FOFF} -ne 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
 				SORT_ORDER=2
+				echo "Reversing video sort order."
 			else
 				SORT_ORDER=1
+				echo "Normal sort order."
 			fi
 	
 
@@ -99,8 +101,12 @@ if [ ${FOFF} -ne 0 ]
 		if [ ${LFC} -ne ${RFC} ]
 			then
 
-
+				echo "Unequal frame counts."
+			else
+				echo "Equal frame counts."
 			fi	
+	
+	fi
 	
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
