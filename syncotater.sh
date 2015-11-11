@@ -4,6 +4,7 @@
 # $3 = outputfile
 # $4 = sync utility (clapperless/clap2)
 
+echo "Made with Potato!"
 CLPR=~/clapperless.py
 
 # boring test stuff
@@ -30,6 +31,8 @@ if [ -r $3 ]
 	then
 		echo "$3 exists, cowardly refusing to try overwriting."
 		exit 3
+fi
+
 if [ $# -eq 4 ]
 	then
 		CLPR=$4
@@ -96,11 +99,6 @@ case ${RFR} in
 	"240")
 		FR_IVAL=".00416666666"
 		;;
-	*)
-		echo "Unknown frame rate? Edit script and add values, add a commit to git..."
-		exit 6
-		;;
-
 esac
 
 # count frames....
@@ -125,25 +123,37 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 		RTRIMARGS=''
 		echo "matching syncs and lengths!"
 	else
+		FRONT_TRIM_TIME=$((${FR_IVAL} * ${FOFF}))
 	
 		if [ ${FOFF} -lt 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
 				SORT_ORDER=2
-				echo "Reversing video sort order."
+				# Reversing video sort order
 			else
-				SORT_ORDER=1
 				echo "Normal sort order."
-			fi
+				LFCT=$((${LFC} - ${FOFF}))
+				if [ ${LFCT} -eq ${RFC} ]
+					then
+						LTRIMARGS="-ss ${FRONT_TRIM_TIME}"	
+						RTRIMARGS=''
+					else
+						LFCE=$((${LFCT} - ${RFC}))
+							if [ ${LFCE} -gt 0 ]
+								then
+									END_TIME=$((${FR_IVAL} * ${RFC}))
+									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
+									RTRIMARGS=''
+								else
+									END_TIME=$((${FR_IVAL} * ${{LFCT}))
+									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
+									RTIRMARGS="-ss 0 -t ${END_TIME}"
+							fi	
+				fi
 
-		LFCT = $(bc ${LFC} - ${FOFF})		
-		if [ ${LFCT} -eq ${RFC} ]
-			then
-				TRIM_TIME=$(bc ${FR_IVAL} * ${FOFF})	
-				LTRIMARGS="-ss ${TRIM_TIME}"	
-				RTRIMARGS=''
+		fi
 
-	fi
+fi
 
 echo "LFR RFR LFC RFC FOFF"
 echo "$LFR $RFR $LFC $RFC $FOFF "
