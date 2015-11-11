@@ -123,13 +123,14 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 		RTRIMARGS=''
 		echo "matching syncs and lengths!"
 	else
-		FRONT_TRIM_TIME=$((${FR_IVAL} * ${FOFF}))
+		FRONT_TRIM_TIME=$(echo "${FOFF} * ${FR_IVAL}" | bc)
+		echo "Unmatched things, fixing those up..."
 	
 		if [ ${FOFF} -lt 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
 				SORT_ORDER=2
-				# Reversing video sort order
+				echo "Reversing video sort order"
 			else
 				echo "Normal sort order."
 				LFCT=$((${LFC} - ${FOFF}))
@@ -141,11 +142,11 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 						LFCE=$((${LFCT} - ${RFC}))
 							if [ ${LFCE} -gt 0 ]
 								then
-									END_TIME=$((${FR_IVAL} * ${RFC}))
+									END_TIME=$(echo "${FR_IVAL} * ${RFC}" | bc)
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
 									RTRIMARGS=''
 								else
-									END_TIME=$((${FR_IVAL} * ${{LFCT}))
+									END_TIME=$( echo "${FR_IVAL} * ${LFCT}" | bc)
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
 									RTIRMARGS="-ss 0 -t ${END_TIME}"
 							fi	
@@ -157,7 +158,12 @@ fi
 
 echo "LFR RFR LFC RFC FOFF"
 echo "$LFR $RFR $LFC $RFC $FOFF "
-	
+
+echo "Trimmed left, front trim, end time, left args, right args"
+echo "${LFCT}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}"
+echo "ffmpeg -strict 2 -codec h264 -i $1  ${LTRIMARGS} ${LCROPARGS} $3-left"	
+echo "ffmpeg -strict 2 -codec h264 -i $2  ${RTRIMARGS} ${RCROPARGS} $3-right"	
+
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
 # 1920x1080 -> 1706x960 or 1600x900
