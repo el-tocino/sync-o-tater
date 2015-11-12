@@ -7,6 +7,11 @@
 echo "Made with Potato!"
 CLPR=~/clapperless.py
 
+# parameterize this someday.
+ENCODEROPT=" -encoder=libx264 -preset veryslow"
+#ENCODEROPT=" -encoder=libx264 -preset slow"
+#ENCODEROPT=" -encoder=libx264 -preset fast"
+
 # boring test stuff
 
 if [ $# -lt 3 ]  || [ $# -gt 4 ]
