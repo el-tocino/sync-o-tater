@@ -166,21 +166,21 @@ echo "ffmpeg -strict 2 -codec h264 -i $2  ${RTRIMARGS} ${RCROPARGS} $3-right"
 
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
-# 1920x1080 -> 1706x960 or 1600x900
+# 1920x1080 -> 1600x900
 # 1280x720 -> 1138x640
 # 2k -> ?
 # other -> ???
 # Crop args:
-# LCROPARGS=' -filter:v "crop=1706:960:107:60"'
+# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
 # RCROPARGS=${LCROPARGS}
 # Shifted crop args:
-# LCROPARGS=' -filter:v "crop=1706:960:110:60"'
-# RCROPARGS=' -filter:v "crop=1706:960:104:60"' 
-#ffmpeg -strict -2 -codec h264 -i $1 ${LTRIMARGS} ${LCROPARGS} Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 ${RTRIMARGS} ${RCROPARGS} Right-$$.mp4 
+# LCROPARGS=' -filter:v "crop=1600:900:164:90"'
+# RCROPARGS=' -filter:v "crop=1600:900:156:90"' 
+#ffmpeg -strict -2 -i $1 ${LTRIMARGS} ${LCROPARGS} -codec h264 Left-$$.mp4 
+#ffmpeg -strict -2 -i $2 ${RTRIMARGS} ${RCROPARGS} -codec h264 Right-$$.mp4 
 # on 1080p and wide angle video, offset cropping could make aligning a bit better as well. 
-#ffmpeg -strict -2 -codec h264 -i $1 ${LTRIMARGS} ${LCROPARGS} Left-$$.mp4 
-#ffmpeg -strict -2 -codec h264 -i $2 ${RTRIMARGS} ${RCROPARGS} Right-$$.mp4 
+#ffmpeg -strict -2 -i $1 ${LTRIMARGS} ${LCROPARGS} -codec h264 Left-$$.mp4 
+#ffmpeg -strict -2 -i $2 ${RTRIMARGS} ${RCROPARGS} -codec h264 Right-$$.mp4 
 
 #
 #ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
