@@ -8,11 +8,13 @@ echo "Made with Potato!"
 CLPR=~/clapperless.py
 
 # parameterize this someday. Uncomment the one that fits best...
-ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset veryslow"
+#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset veryslow"
 #ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset slow"
-#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ultrafast"
+ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ultrafast"
 
 # boring test stuff
+#LCROPARGS=' -filter:v "crop=1600:900:160:90"'
+#RCROPARGS=' -filter:v "crop=1600:900:160:90"'
 
 if [ $# -lt 3 ]  || [ $# -gt 4 ]
 	then
@@ -184,12 +186,13 @@ echo "$LFR $RFR $LFC $RFC $FOFF "
 echo "Trimmed left, front trim, front trime time, end trim, end trim time"
 echo "${LFCT}, ${FRONT_TRIM}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${END_TRIM_TIME}"
 echo " left args, right args, left crop args, right crop args, encoding options"
-
 echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}"
 
 
-echo "ffmpeg -i $1  ${LTRIMARGS} ${LCROPARGS} ${ENCODEROPT} $3-left.mp4"	
-echo "ffmpeg -i $2  ${RTRIMARGS} ${RCROPARGS} ${ENCODEROPT} $3-right.mp4"	
+echo "ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4"	
+ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4
+echo "ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4"	
+ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4	
 
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
@@ -204,8 +207,5 @@ echo "ffmpeg -i $2  ${RTRIMARGS} ${RCROPARGS} ${ENCODEROPT} $3-right.mp4"
 # LCROPARGS=' -filter:v "crop=1600:900:164:90"'
 # RCROPARGS=' -filter:v "crop=1600:900:156:90"' 
 #
-ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
-"[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
-#[1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
-amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} $3-3d.mp4
+ffmpeg -i $3-left.mp4 -i $3-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} $3-3d.mp4
 
