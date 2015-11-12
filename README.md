@@ -6,7 +6,7 @@ https://www.ffmpeg.org/
 
 Clapperless was found here:
 http://users.mur.at/ms/projects/clapperless/
-(scipy and nimby needed. python2 based)
+(scipy and numby needed for this, python2 based)
 
 and the excellent exiftool
 http://www.sno.phy.queensu.ca/~phil/exiftool/
