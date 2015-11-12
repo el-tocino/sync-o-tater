@@ -7,10 +7,10 @@
 echo "Made with Potato!"
 CLPR=~/clapperless.py
 
-# parameterize this someday.
-ENCODEROPT=" -encoder=libx264 -preset veryslow"
-#ENCODEROPT=" -encoder=libx264 -preset slow"
-#ENCODEROPT=" -encoder=libx264 -preset fast"
+# parameterize this someday. Uncomment the one that fits best...
+ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset veryslow"
+#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset slow"
+#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ultrafast"
 
 # boring test stuff
 
@@ -36,6 +36,16 @@ if [ -r $3 ]
 	then
 		echo "$3 exists, cowardly refusing to try overwriting."
 		exit 3
+	else 
+		touch $3 
+		CRTD=$?	
+		if [ ! ${CRTD} ]
+			then
+				echo "Unable to write to file $3."
+				exit 3
+			else
+				rm -f $3
+		fi	
 fi
 
 if [ $# -eq 4 ]
@@ -128,7 +138,9 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 		RTRIMARGS=''
 		echo "matching syncs and lengths!"
 	else
-		FRONT_TRIM_TIME=$(echo "${FOFF} * ${FR_IVAL}" | bc)
+		FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
+		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
+
 		echo "Unmatched things, fixing those up..."
 	
 		if [ ${FOFF} -lt 0 ]
@@ -141,19 +153,24 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 				LFCT=$((${LFC} - ${FOFF}))
 				if [ ${LFCT} -eq ${RFC} ]
 					then
+						echo "trimmed left equals right."
 						LTRIMARGS="-ss ${FRONT_TRIM_TIME}"	
 						RTRIMARGS=''
 					else
 						LFCE=$((${LFCT} - ${RFC}))
 							if [ ${LFCE} -gt 0 ]
 								then
-									END_TIME=$(echo "${FR_IVAL} * ${RFC}" | bc)
+									echo "Left ending exceeds, trimming."
+									END_TRIM=$(echo "${FR_IVAL} * ${RFC}" | bc)
+									#END_TRIME_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
 									RTRIMARGS=''
 								else
+									echo "Right ending exceeds, trimming."
 									END_TIME=$( echo "${FR_IVAL} * ${LFCT}" | bc)
+									#END_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
-									RTIRMARGS="-ss 0 -t ${END_TIME}"
+									RTRIMARGS="-ss 0 -t ${END_TIME}"
 							fi	
 				fi
 
@@ -164,10 +181,15 @@ fi
 echo "LFR RFR LFC RFC FOFF"
 echo "$LFR $RFR $LFC $RFC $FOFF "
 
-echo "Trimmed left, front trim, end time, left args, right args"
-echo "${LFCT}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}"
-echo "ffmpeg -strict 2 -codec h264 -i $1  ${LTRIMARGS} ${LCROPARGS} $3-left"	
-echo "ffmpeg -strict 2 -codec h264 -i $2  ${RTRIMARGS} ${RCROPARGS} $3-right"	
+echo "Trimmed left, front trim, front trime time, end trim, end trim time"
+echo "${LFCT}, ${FRONT_TRIM}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${END_TRIM_TIME}"
+echo " left args, right args, left crop args, right crop args, encoding options"
+
+echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}"
+
+
+echo "ffmpeg -i $1  ${LTRIMARGS} ${LCROPARGS} ${ENCODEROPT} $3-left.mp4"	
+echo "ffmpeg -i $2  ${RTRIMARGS} ${RCROPARGS} ${ENCODEROPT} $3-right.mp4"	
 
 # make this optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
@@ -181,15 +203,9 @@ echo "ffmpeg -strict 2 -codec h264 -i $2  ${RTRIMARGS} ${RCROPARGS} $3-right"
 # Shifted crop args:
 # LCROPARGS=' -filter:v "crop=1600:900:164:90"'
 # RCROPARGS=' -filter:v "crop=1600:900:156:90"' 
-#ffmpeg -strict -2 -i $1 ${LTRIMARGS} ${LCROPARGS} -codec h264 Left-$$.mp4 
-#ffmpeg -strict -2 -i $2 ${RTRIMARGS} ${RCROPARGS} -codec h264 Right-$$.mp4 
-# on 1080p and wide angle video, offset cropping could make aligning a bit better as well. 
-#ffmpeg -strict -2 -i $1 ${LTRIMARGS} ${LCROPARGS} -codec h264 Left-$$.mp4 
-#ffmpeg -strict -2 -i $2 ${RTRIMARGS} ${RCROPARGS} -codec h264 Right-$$.mp4 
-
 #
-#ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
-#"[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
-##[1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
-#amerge,pan=stereo:c0<c0+c2:c1<c1+c3" output
+ffmpeg -i Left-$$.mp4 -i Right-$$.mp4 -filter_complex \
+"[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
+#[1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
+amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} $3-3d.mp4
 
