@@ -8,7 +8,7 @@
 # things to add:
 # -test mode (do not exec converts)
 # -video sizing
-# -cropping
+# -cropping/shifting
 # -output quality (should probably just be which preset for ffmpeg)
 
 CLPR=~/clapperless.py
@@ -18,47 +18,88 @@ CLPR=~/clapperless.py
 #ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset slow"
 ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ultrafast"
 
-# boring test stuff
-#LCROPARGS=' -filter:v "crop=1600:900:160:90"'
-#RCROPARGS=' -filter:v "crop=1600:900:160:90"'
+# optional...
+# Trim video edges...on super wide angles should help the final rendering look better...
+# 1920x1080 -> 1600x900
+# 1280x720 -> 1138x640
+# 
+# Crop args:
+# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
+# RCROPARGS=${LCROPARGS}
+# Shifted crop args:
+# LCROPARGS=' -filter:v "crop=1600:900:164:90"'
+# RCROPARGS=' -filter:v "crop=1600:900:156:90"'
+function PrintUsage {
 
-if [ $# -lt 3 ]  || [ $# -gt 4 ]
+cat << EOF
+Usage:
+syncotater.sh -htlrcopCV
+
+Required:
+-l leftvid
+-r rightvid
+-o outputvid
+-C clapperlessfile
+Optional:
+-p qualitypreset
+        (ffmpeg preset for h264)
+-V video resolution
+        eg, "1920:1080"
+-c Hres:Vres:offsetH:offestV
+        ie, 1080p -> 900p would use 1600:900:160:90
+-t
+        test mode (output command strings only, no reencoding)
+EOF
+exit 0
+}
+
+while getopts "htl:r:o:c:p:C:V:" OPTION; do
+    case ${OPTION} in
+        h) PrintUsage; exit 0; ;;
+        t) PREFIX="echo ";;
+        l) LEFTVID="$OPTARG" ;;
+	r) RIGHTVID="$OPTARG" ;;
+	o) OUTFILE="$OPTARG" ;;
+	c) CROPOPTS="$OPTARG" ;;
+	p) PRESETOPT="$OPTARG" ;;
+	C) CLPR="$OPTARG" ;;
+	V) RESOLUTION="$OPTARG" ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+if [ $# -lt 4 ]  
 	then
-		echo "Usage: $0 leftvideofile rightvideofile outputfile [optional: clapperless path]"
+		PrintUsage
 		exit 1
 fi
 
-if [ ! -r $1 ]
+if [ ! -r $LEFTVID ]
 	then	
 		echo "Can't read left video?"
 		exit 2
 fi
 
-if [ ! -r $2 ]
+if [ ! -r $RIGHTVID ]
 	then
 		echo "Can't read right video?"
 		exit 2
 fi
 
-if [ -b $3 ]
+if [ -b $OUTFILE ]
 	then
-		echo "$3 exists, cowardly refusing to try overwriting."
+		echo "${OUTFILE} exists, cowardly refusing to try overwriting."
 		exit 3
 	else 
-		touch $3 
+		touch ${OUTFILE}
 		CRTD=$?	
 		if [ ! ${CRTD} ]
 			then
-				echo "Unable to write to file $3."
+				echo "Unable to write to file ${OUTFILE}."
 				exit 3
 			else
-				rm -f $3
+				rm -f ${OUTFILE}
 		fi	
-fi
-
-if [ $# -eq 4 ]
-	then
-		CLPR=$4
 fi
 
 if [ ! -r $CLPR ]
@@ -69,8 +110,8 @@ fi
 
 # find framerate of the videos
 
-LFR=$(exiftool -VideoFrameRate $1 | awk ' { print $NF} ' )
-RFR=$(exiftool -VideoFrameRate $2 | awk ' { print $NF} ' )
+LFR=$(exiftool -VideoFrameRate ${LEFTVID} | awk ' { print $NF} ' )
+RFR=$(exiftool -VideoFrameRate ${RIGHTVID} | awk ' { print $NF} ' )
 
 if [ $LFR != $RFR ]
 	then
@@ -130,7 +171,7 @@ LFC=$(ffprobe -i $1 -show_frames -hide_banner |grep coded_picture_number | tail 
 RFC=$(ffprobe -i $2 -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 
 # get frame offsets...
-FOFF=$(python2 ${CLPR} -c -r ${LFR} $1 $2 | tail -1 |awk ' { print $1 } ')
+FOFF=$(python2 ${CLPR} -c -r ${LFR} ${LEFTVID} ${RIGHTVID} | tail -1 |awk ' { print $1 } ')
 
 # Using the second number's decimals would give a relative quality assessment. Closer to .5, the worse the offset.  
 
@@ -158,6 +199,7 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 				echo "Reversing video sort order" >> $$.out
 				# trim right to start at left.
                                 RFCT=$((${RFC} - ${FOFF}))
+				LFCT=${RFCT}
                                 if [ ${RFCT} -eq ${LFC} ]
                                         then
                                                 echo "trimmed right equals left." >> $$.out
@@ -174,7 +216,6 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
                                                                 else
                                                                         echo "Left ending exceeds, trimming." >> $$.out
                                                                         END_TIME=$( echo "${FR_IVAL} * ${RFCT}" | bc)
-                                                                        #END_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
                                                                         RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
                                                                         LTRIMARGS="-ss 0 -t ${END_TIME}"
                                                         fi
@@ -194,13 +235,11 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 								then
 									echo "Left ending exceeds, trimming." >> $$.out
 									END_TRIM=$(echo "${FR_IVAL} * ${RFC}" | bc)
-									#END_TRIME_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
 									RTRIMARGS=''
 								else
 									echo "Right ending exceeds, trimming." >> $$.out
 									END_TIME=$( echo "${FR_IVAL} * ${LFCT}" | bc)
-									#END_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
 									RTRIMARGS="-ss 0 -t ${END_TIME}"
 							fi	
@@ -219,24 +258,13 @@ echo " left args, right args, left crop args, right crop args, encoding options"
 echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}" >> $$.out
 
 
-echo "ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4" >> $$.out
-ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4
-echo "ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4" >> $$.out
-ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4	
+echo "ffmpeg -i ${LEFTVID}  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} ${OUTFILE}-left.mp4" >> $$.out
+${PREFIX} ffmpeg -i ${LEFTVID} ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} ${OUTFILE}-left.mp4
+echo "ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4" >> $$.out
+${PREFIX} ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4	
 
-# make this optional...
-# Trim video edges...on super wide angles should help the final rendering look better...
-# 1920x1080 -> 1600x900
-# 1280x720 -> 1138x640
-# 2k -> ?
-# other -> ???
-# Crop args:
-# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
-# RCROPARGS=${LCROPARGS}
-# Shifted crop args:
-# LCROPARGS=' -filter:v "crop=1600:900:164:90"'
-# RCROPARGS=' -filter:v "crop=1600:900:156:90"' 
-#
-ffmpeg -i $3-left.mp4 -i $3-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} $3-3d.mp4
-echo "## $3-3d.mp4 made with Potato! ##"
+${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4
+echo "## ${OUTFILE}-3d.mp4 made with Potato! ##"
+
+exit 0
 
