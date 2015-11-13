@@ -1,22 +1,4 @@
 #!/bin/bash
-# $1 = left video
-# $2 = right video
-# $3 = outputfile
-# $4 = sync utility (clapperless/clap2)
-
-# command line parameters need to be cleaned up. Implement getopts...
-# things to add:
-# -test mode (do not exec converts)
-# -video sizing
-# -cropping/shifting
-# -output quality (should probably just be which preset for ffmpeg)
-
-CLPR=~/clapperless.py
-
-# parameterize this someday. Uncomment the one that fits best...
-#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset veryslow"
-#ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset slow"
-ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ultrafast"
 
 # optional...
 # Trim video edges...on super wide angles should help the final rendering look better...
@@ -55,7 +37,7 @@ exit 0
 
 while getopts "htl:r:o:c:p:C:V:" OPTION; do
     case ${OPTION} in
-        h) PrintUsage; exit 0; ;;
+        h) PrintUsage;  ;;
         t) PREFIX="echo ";;
         l) LEFTVID="$OPTARG" ;;
 	r) RIGHTVID="$OPTARG" ;;
@@ -107,6 +89,11 @@ if [ ! -r $CLPR ]
 		echo "Can't find clapperless!"
 		exit 4
 fi
+
+# Uncomment the one that fits best...
+PRESETOPT="${PRESETOPT:-ultrafast}"
+# veryslow slow fast ultrafast, etc
+ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ${PRESETOPT} "
 
 # find framerate of the videos
 
