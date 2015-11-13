@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function PrintUsage {
-
 cat << EOF
 Usage:
 syncotater.sh -htlrcopCV
@@ -19,12 +18,12 @@ Optional:
 -t
         test mode (output command strings only, no reencoding)
 EOF
-exit 0
 }
 
+echo "evaluating opts"
 while getopts "htl:r:o:c:p:C:" OPTION; do
     case ${OPTION} in
-        h) PrintUsage;  ;;
+#        h) PrintUsage; exit 0 ;;
         t) PREFIX="echo ";;
         l) LEFTVID="$OPTARG" ;;
 	r) RIGHTVID="$OPTARG" ;;
@@ -35,12 +34,6 @@ while getopts "htl:r:o:c:p:C:" OPTION; do
     esac
 done
 shift $(($OPTIND - 1))
-
-if [ $# -lt 4 ]  
-	then
-		PrintUsage
-		exit 1
-fi
 
 if [ ! -r $LEFTVID ]
 	then	
@@ -249,6 +242,7 @@ ${PREFIX} ffmpeg -i ${LEFTVID} ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} ${OUTFILE
 echo "ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4" >> $$.out
 ${PREFIX} ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4	
 
+echo ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4 >> $$.out
 ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4
 echo "## ${OUTFILE}-3d.mp4 made with Potato! ##"
 
