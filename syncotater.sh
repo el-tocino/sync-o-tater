@@ -167,8 +167,8 @@ case ${RFR} in
 esac
 
 # count frames....
-LFC=$(ffprobe -i $1 -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
-RFC=$(ffprobe -i $2 -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
+LFC=$(ffprobe -i ${LEFTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
+RFC=$(ffprobe -i ${RIGHTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 
 # get frame offsets...
 FOFF=$(python2 ${CLPR} -c -r ${LFR} ${LEFTVID} ${RIGHTVID} | tail -1 |awk ' { print $1 } ')
