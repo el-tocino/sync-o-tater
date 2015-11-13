@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# optional...
-# Trim video edges...on super wide angles should help the final rendering look better...
-# 1920x1080 -> 1600x900
-# 1280x720 -> 1138x640
-# 
-# Crop args:
-# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
-# RCROPARGS=${LCROPARGS}
-# Shifted crop args:
-# LCROPARGS=' -filter:v "crop=1600:900:164:90"'
-# RCROPARGS=' -filter:v "crop=1600:900:156:90"'
 function PrintUsage {
 
 cat << EOF
@@ -25,8 +14,6 @@ Required:
 Optional:
 -p qualitypreset
         (ffmpeg preset for h264)
--V video resolution
-        eg, "1920:1080"
 -c Hres:Vres:offsetH:offestV
         ie, 1080p -> 900p would use 1600:900:160:90
 -t
@@ -35,17 +22,16 @@ EOF
 exit 0
 }
 
-while getopts "htl:r:o:c:p:C:V:" OPTION; do
+while getopts "htl:r:o:c:p:C:" OPTION; do
     case ${OPTION} in
         h) PrintUsage;  ;;
         t) PREFIX="echo ";;
         l) LEFTVID="$OPTARG" ;;
 	r) RIGHTVID="$OPTARG" ;;
 	o) OUTFILE="$OPTARG" ;;
-	c) CROPOPTS="$OPTARG" ;;
+	c) CROPOPTS='  -filter:v "crop='$OPTARG' "' ;;
 	p) PRESETOPT="$OPTARG" ;;
 	C) CLPR="$OPTARG" ;;
-	V) RESOLUTION="$OPTARG" ;;
     esac
 done
 shift $(($OPTIND - 1))
@@ -238,6 +224,19 @@ fi
 
 echo "LFR RFR LFC RFC FOFF" >> $$.out
 echo "$LFR $RFR $LFC $RFC $FOFF " >> $$.out
+
+
+# optional...
+# Trim video edges...on super wide angles should help the final rendering look better...
+# 1920x1080 -> 1600x900
+# 1280x720 -> 1138x640
+# CROPOPTS 
+# Crop args:
+# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
+# RCROPARGS=${LCROPARGS}
+# Shifted crop args:
+# LCROPARGS=' -filter:v "crop=1600:900:164:90"'
+# RCROPARGS=' -filter:v "crop=1600:900:156:90"'
 
 echo "Trimmed left, front trim, front trime time, end trim, end trim time" >> $$.out
 echo "${LFCT}, ${FRONT_TRIM}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${END_TRIM_TIME}" >> $$.out
