@@ -4,7 +4,13 @@
 # $3 = outputfile
 # $4 = sync utility (clapperless/clap2)
 
-echo "Made with Potato!"
+# command line parameters need to be cleaned up. Implement getopts...
+# things to add:
+# -test mode (do not exec converts)
+# -video sizing
+# -cropping
+# -output quality (should probably just be which preset for ffmpeg)
+
 CLPR=~/clapperless.py
 
 # parameterize this someday. Uncomment the one that fits best...
@@ -34,7 +40,7 @@ if [ ! -r $2 ]
 		exit 2
 fi
 
-if [ -r $3 ]
+if [ -b $3 ]
 	then
 		echo "$3 exists, cowardly refusing to try overwriting."
 		exit 3
@@ -72,7 +78,8 @@ if [ $LFR != $RFR ]
 		exit 5 
 fi
 
-# clapperless hates fractional framerates. Set framerate as whole number, but keep frame interval time at actual frame rate interval.
+# clapperless hates fractional framerates. Set one framerate as whole number, 
+# but keep frame interval time at actual frame rate interval.
 
 case ${RFR} in
 	"24")
@@ -138,37 +145,60 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 	then
 		LTRIMARGS=''
 		RTRIMARGS=''
-		echo "matching syncs and lengths!"
+		echo "matching syncs and lengths!" > $$.out
 	else
 		FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
 		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
 
-		echo "Unmatched things, fixing those up..."
+		echo "Unmatched things, fixing those up..." >> $$.out
 	
 		if [ ${FOFF} -lt 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
-				SORT_ORDER=2
-				echo "Reversing video sort order"
+				echo "Reversing video sort order" >> $$.out
+				# trim right to start at left.
+                                RFCT=$((${RFC} - ${FOFF}))
+                                if [ ${RFCT} -eq ${LFC} ]
+                                        then
+                                                echo "trimmed right equals left." >> $$.out
+                                                RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
+                                                RTRIMARGS=''
+                                        else
+                                                RFCE=$((${RFCT} - ${LFC}))
+                                                        if [ ${RFCE} -gt 0 ]
+                                                                then
+                                                                        echo "Right ending exceeds, trimming." >> $$.out
+                                                                        END_TRIM=$(echo "${FR_IVAL} * ${LFC}" | bc)
+                                                                        RTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"
+                                                                        LTRIMARGS=''
+                                                                else
+                                                                        echo "Left ending exceeds, trimming." >> $$.out
+                                                                        END_TIME=$( echo "${FR_IVAL} * ${RFCT}" | bc)
+                                                                        #END_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
+                                                                        RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
+                                                                        LTRIMARGS="-ss 0 -t ${END_TIME}"
+                                                        fi
+                                fi
+
 			else
-				echo "Normal sort order."
+				echo "Normal sort order." >> $$.out
 				LFCT=$((${LFC} - ${FOFF}))
 				if [ ${LFCT} -eq ${RFC} ]
 					then
-						echo "trimmed left equals right."
+						echo "trimmed left equals right." >> $$.out
 						LTRIMARGS="-ss ${FRONT_TRIM_TIME}"	
 						RTRIMARGS=''
 					else
 						LFCE=$((${LFCT} - ${RFC}))
 							if [ ${LFCE} -gt 0 ]
 								then
-									echo "Left ending exceeds, trimming."
+									echo "Left ending exceeds, trimming." >> $$.out
 									END_TRIM=$(echo "${FR_IVAL} * ${RFC}" | bc)
 									#END_TRIME_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
 									RTRIMARGS=''
 								else
-									echo "Right ending exceeds, trimming."
+									echo "Right ending exceeds, trimming." >> $$.out
 									END_TIME=$( echo "${FR_IVAL} * ${LFCT}" | bc)
 									#END_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${END_TRIM} seconds" "+%H:%M:%S.%N")
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
@@ -180,18 +210,18 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 
 fi
 
-echo "LFR RFR LFC RFC FOFF"
-echo "$LFR $RFR $LFC $RFC $FOFF "
+echo "LFR RFR LFC RFC FOFF" >> $$.out
+echo "$LFR $RFR $LFC $RFC $FOFF " >> $$.out
 
-echo "Trimmed left, front trim, front trime time, end trim, end trim time"
-echo "${LFCT}, ${FRONT_TRIM}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${END_TRIM_TIME}"
-echo " left args, right args, left crop args, right crop args, encoding options"
-echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}"
+echo "Trimmed left, front trim, front trime time, end trim, end trim time" >> $$.out
+echo "${LFCT}, ${FRONT_TRIM}, ${FRONT_TRIM_TIME}, ${END_TIME}, ${END_TRIM_TIME}" >> $$.out
+echo " left args, right args, left crop args, right crop args, encoding options" >> $$.out
+echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}" >> $$.out
 
 
-echo "ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4"	
+echo "ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4" >> $$.out
 ffmpeg -i $1  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} $3-left.mp4
-echo "ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4"	
+echo "ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4" >> $$.out
 ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4	
 
 # make this optional...
@@ -208,4 +238,5 @@ ffmpeg -i $2  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} $3-right.mp4
 # RCROPARGS=' -filter:v "crop=1600:900:156:90"' 
 #
 ffmpeg -i $3-left.mp4 -i $3-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} $3-3d.mp4
+echo "## $3-3d.mp4 made with Potato! ##"
 
