@@ -1,0 +1,31 @@
+todo 2015111301
+
+Encoding Quality:
+
+Clapperless gives sub-frame offsets as decimals, which gives a good indication of the actual suitability of the recordings for 3d. 
+The closer the sub-frame offset is to .5 (scale of .00 to .9999), the worse the quality is.  This is not to say it can not be encoded, just that you're having a clear, mid-frame offset to deal with. Higher frame rates make this more acceptable to deal with in the finished project.   
+
+Without genlocked cameras, it's extremely rare to encouter a .00 offset.  
+
+
+Cleanup of the calculation logic if-then-else ridiculousness:
+
+Making it one bunch of logic to run through for either non-matched start scenario would make things pretty.
+
+
+Offset-crop parameters:
+On super wide angle videos, ala gopros and the like, having a small amount of pixels shifted closer when cropping on both views would likely reduce some of the parallax issues.  Don't overdo it, of course.  
+
+
+More efficient frame counting:
+
+Sort of surprised there's not a better way to get a total number of frames from a video without having to do some other ridiculousness.
+Clapperless can probably be extended, as it does frame counts now.  My python isn't that good, however. 
+
+
+Optional half-frame SBS or T/B encoding:
+ala DVD, Bluray, or broadcast 3d.  1920x540 per view, etc.  
+
+
+
+
