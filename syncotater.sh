@@ -49,7 +49,7 @@ fi
 
 if [ -b $OUTFILE ]
 	then
-		echo "${OUTFILE} exists, cowardly refusing to try overwriting."
+		echo "${OUTFILE}-3d.mp4 exists, cowardly refusing to try overwriting."
 		exit 3
 	else 
 		touch ${OUTFILE}
@@ -171,7 +171,7 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
                                         then
                                                 echo "trimmed right equals left." >> $$.out
                                                 RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
-                                                RTRIMARGS=''
+                                                LTRIMARGS=''
                                         else
                                                 RFCE=$((${RFCT} - ${LFC}))
                                                         if [ ${RFCE} -gt 0 ]
