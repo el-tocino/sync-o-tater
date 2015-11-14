@@ -3,7 +3,7 @@ todo 2015111301
 Encoding Quality:
 
 Clapperless gives sub-frame offsets as decimals, which gives a good indication of the actual suitability of the recordings for 3d. 
-The closer the sub-frame offset is to .5 (scale of .00 to .9999), the worse the quality is.  This is not to say it can not be encoded, just that you're having a clear, mid-frame offset to deal with. Higher frame rates make this more acceptable to deal with in the finished project.   
+The closer the sub-frame offset is to .5 (scale of .00 to .9999), the worse the quality is.  This is not to say it can not be encoded, just that you're having a clear, mid-frame offset to deal with. Higher frame rates make this more acceptable to deal with in the finished project.   I'd be willing to be that a standard deviation curve could be applied to the numbers to indicate the acceptable ranges.
 
 Without genlocked cameras, it's extremely rare to encouter a .00 offset.  
 
