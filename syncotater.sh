@@ -154,8 +154,6 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 		RTRIMARGS=''
 		echo "matching syncs and lengths!" > $$.out
 	else
-		FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
-		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
 
 		echo "Unmatched things, fixing those up..." >> $$.out
 	
@@ -164,6 +162,9 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 				FOFF=$(( 0 - ${FOFF}))
 				echo "Reversing video sort order" >> $$.out
 				# trim right to start at left.
+				FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
+                		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
+
                                 RFCT=$((${RFC} - ${FOFF}))
 				LFCT=${RFCT}
                                 if [ ${RFCT} -eq ${LFC} ]
@@ -190,6 +191,9 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 			else
 				echo "Normal sort order." >> $$.out
 				LFCT=$((${LFC} - ${FOFF}))
+				FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
+				FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
+
 				if [ ${LFCT} -eq ${RFC} ]
 					then
 						echo "trimmed left equals right." >> $$.out
