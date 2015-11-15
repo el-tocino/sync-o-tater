@@ -249,10 +249,6 @@ ${PREFIX} ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFI
 echo ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4 >> $$.out
 ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4
 echo "## ${OUTFILE}-3d.mp4 made with Potato! ##"
-if [ ${PREFIX} != '' ]
-	then
-		cat $$.out 
-fi
-rm $$.out
+
 exit 0
 
