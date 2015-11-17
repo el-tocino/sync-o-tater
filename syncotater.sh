@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ $# -lt 4 ]
+        then
+                PrintUsage
+                exit 0
+fi
+
 function PrintUsage {
 cat << EOF
 Usage:
@@ -28,7 +34,7 @@ while getopts "htl:r:o:c:p:C:" OPTION; do
         l) LEFTVID="$OPTARG" ;;
 	r) RIGHTVID="$OPTARG" ;;
 	o) OUTFILE="$OPTARG" ;;
-	c) CROPOPTS='  -filter:v "crop='$OPTARG' "' ;;
+	c) CROPOPTS='  -filter:v "crop='$OPTARG'"' ;;
 	p) PRESETOPT="$OPTARG" ;;
 	C) CLPR="$OPTARG" ;;
     esac
@@ -69,6 +75,8 @@ if [ ! -r $CLPR ]
 		exit 4
 fi
 
+echo "leftvid rightvid outfile croptions preset clpr test "
+echo "${LEFTVID}, ${RIGHTVID}, ${OUTFILE}, ${CROPOPTS}, ${PRESETOPT}, ${CLPR} , ${PREFIX}"
 # Uncomment the one that fits best...
 PRESETOPT="${PRESETOPT:-ultrafast}"
 # veryslow slow fast ultrafast, etc
@@ -229,8 +237,8 @@ echo "$LFR $RFR $LFC $RFC $FOFF " >> $$.out
 # 1280x720 -> 1138x640
 # CROPOPTS 
 # Crop args:
-# LCROPARGS=' -filter:v "crop=1600:900:160:90"'
-# RCROPARGS=${LCROPARGS}
+LCROPARGS="${CROPOPTS}"
+RCROPARGS="${CROPOPTS}"
 # Shifted crop args:
 # LCROPARGS=' -filter:v "crop=1600:900:164:90"'
 # RCROPARGS=' -filter:v "crop=1600:900:156:90"'
