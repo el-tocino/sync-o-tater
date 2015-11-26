@@ -26,7 +26,6 @@ Optional:
 EOF
 }
 
-echo "evaluating opts"
 while getopts "htl:r:o:c:p:C:" OPTION; do
     case ${OPTION} in
 #        h) PrintUsage; exit 0 ;;
@@ -75,8 +74,8 @@ if [ ! -r $CLPR ]
 		exit 4
 fi
 
-echo "leftvid rightvid outfile croptions preset clpr test "
-echo "${LEFTVID}, ${RIGHTVID}, ${OUTFILE}, ${CROPOPTS}, ${PRESETOPT}, ${CLPR} , ${PREFIX}"
+#echo "leftvid rightvid outfile croptions preset clpr test "
+#echo "${LEFTVID}, ${RIGHTVID}, ${OUTFILE}, ${CROPOPTS}, ${PRESETOPT}, ${CLPR} , ${PREFIX}"
 # Uncomment the one that fits best...
 PRESETOPT="${PRESETOPT:-ultrafast}"
 # veryslow slow fast ultrafast, etc
@@ -160,15 +159,14 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 	then
 		LTRIMARGS=''
 		RTRIMARGS=''
-		echo "matching syncs and lengths!" > $$.out
+		# matching syncs and lengths
 	else
 
-		echo "Unmatched things, fixing those up..." >> $$.out
+		#Unmatched things, fixing those up...
 	
 		if [ ${FOFF} -lt 0 ]
 			then
 				FOFF=$(( 0 - ${FOFF}))
-				echo "Reversing video sort order" >> $$.out
 				# trim right to start at left.
 				FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
                 		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
@@ -177,19 +175,19 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
 				LFCT=${RFCT}
                                 if [ ${RFCT} -eq ${LFC} ]
                                         then
-                                                echo "trimmed right equals left." >> $$.out
+                                                #trimmed right equals left
                                                 RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
                                                 LTRIMARGS=''
                                         else
                                                 RFCE=$((${RFCT} - ${LFC}))
                                                         if [ ${RFCE} -gt 0 ]
                                                                 then
-                                                                        echo "Right ending exceeds, trimming." >> $$.out
+                                                                        #Right ending exceeds, trimming
                                                                         END_TRIM=$(echo "${FR_IVAL} * ${LFC}" | bc)
                                                                         RTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"
                                                                         LTRIMARGS=''
                                                                 else
-                                                                        echo "Left ending exceeds, trimming." >> $$.out
+                                                                        #Left ending exceeds, trimming.
                                                                         END_TIME=$( echo "${FR_IVAL} * ${RFCT}" | bc)
                                                                         RTRIMARGS="-ss ${FRONT_TRIM_TIME}"
                                                                         LTRIMARGS="-ss 0 -t ${END_TIME}"
@@ -197,26 +195,25 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
                                 fi
 
 			else
-				echo "Normal sort order." >> $$.out
 				LFCT=$((${LFC} - ${FOFF}))
 				FRONT_TRIM=$(echo "${FOFF} * ${FR_IVAL}" | bc)
 				FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
 
 				if [ ${LFCT} -eq ${RFC} ]
 					then
-						echo "trimmed left equals right." >> $$.out
+						#trimmed left equals right. 
 						LTRIMARGS="-ss ${FRONT_TRIM_TIME}"	
 						RTRIMARGS=''
 					else
 						LFCE=$((${LFCT} - ${RFC}))
 							if [ ${LFCE} -gt 0 ]
 								then
-									echo "Left ending exceeds, trimming." >> $$.out
+									#Left ending exceeds, trimming.
 									END_TRIM=$(echo "${FR_IVAL} * ${RFC}" | bc)
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME} -t ${END_TIME}"		
 									RTRIMARGS=''
 								else
-									echo "Right ending exceeds, trimming." >> $$.out
+									#Right ending exceeds, trimming.
 									END_TIME=$( echo "${FR_IVAL} * ${LFCT}" | bc)
 									LTRIMARGS="-ss ${FRONT_TRIM_TIME}"
 									RTRIMARGS="-ss 0 -t ${END_TIME}"
@@ -231,11 +228,6 @@ echo "LFR RFR LFC RFC FOFF" >> $$.out
 echo "$LFR $RFR $LFC $RFC $FOFF " >> $$.out
 
 
-# optional...
-# Trim video edges...on super wide angles should help the final rendering look better...
-# 1920x1080 -> 1600x900
-# 1280x720 -> 1138x640
-# CROPOPTS 
 # Crop args:
 LCROPARGS="${CROPOPTS}"
 RCROPARGS="${CROPOPTS}"
