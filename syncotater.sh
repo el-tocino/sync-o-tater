@@ -1,12 +1,6 @@
 #!/bin/bash
 
-if [ $# -lt 4 ]
-        then
-                PrintUsage
-                exit 0
-fi
-
-function PrintUsage {
+PrintUsage () {
 cat << EOF
 Usage:
 syncotater.sh -htlrcopCV
@@ -26,9 +20,14 @@ Optional:
 EOF
 }
 
+if [ $# -lt 4 ]
+        then
+                PrintUsage
+                exit 0
+fi
+
 while getopts "htl:r:o:c:p:C:" OPTION; do
     case ${OPTION} in
-#        h) PrintUsage; exit 0 ;;
         t) PREFIX="echo ";;
         l) LEFTVID="$OPTARG" ;;
 	r) RIGHTVID="$OPTARG" ;;
