@@ -1,15 +1,20 @@
 # sync-o-tater
 
-3D video taken with potato.
+3D video from potato.
 
-A tool to merge two videos into one side-by-side audio-synced 3D monstrosity.
+A tool to merge two side-by-side videos into one audio-synced 3D monstrosity.  
+(a handy quick reference to taking 3d video is http://www.dashwood3d.com/blog/beginners-guide-to-shooting-stereoscopic-3d/ )
 
 Requires ffmpeg (with h264 support at the moment, can be edited if you want)
 https://www.ffmpeg.org/
 
+python (2.[6-7ish], currently)
 Clapperless, originally found here*  http://users.mur.at/ms/projects/clapperless/
 (scipy and numby needed for this, python2 based)
 - clap2.py, part of this repo, works with a bit less output.  
+
+OpenCV (for python 2?)
+http://opencv.org/
 
 and the excellent exiftool
 http://www.sno.phy.queensu.ca/~phil/exiftool/
@@ -19,7 +24,7 @@ Probably can be compressed into a much more workable beast at some point with so
 
 Usage:
 
-$ syncotater.sh -l LEFTFILE -r RIGHTFILE -C /path/to/clap2.py -o OUTPUTFILE
+$ syncotater.sh -l LEFTFILE -r RIGHTFILE -C /path/to/clap2.py -o OUTPUTFILE [-tcph]
 
 Required:
 -l leftvid
