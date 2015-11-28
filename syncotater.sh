@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# func dat
 PrintUsage () {
 cat << EOF
 Usage:
@@ -10,6 +11,7 @@ Required:
 -r rightvid
 -o outputvid
 -C clapperlessfile
+-f frame rate counter
 Optional:
 -p qualitypreset
         (ffmpeg preset for h264)
@@ -26,7 +28,9 @@ if [ $# -lt 4 ]
                 exit 0
 fi
 
-while getopts "htl:r:o:c:p:C:" OPTION; do
+# do the stuff and things!
+
+while getopts "htl:r:o:c:p:C:f:" OPTION; do
     case ${OPTION} in
         t) PREFIX="echo ";;
         l) LEFTVID="$OPTARG" ;;
@@ -35,6 +39,7 @@ while getopts "htl:r:o:c:p:C:" OPTION; do
 	c) CROPOPTS='  -filter:v "crop='$OPTARG'"' ;;
 	p) PRESETOPT="$OPTARG" ;;
 	C) CLPR="$OPTARG" ;;
+	f) FRAMER="$OPTARG";;
     esac
 done
 shift $(($OPTIND - 1))
@@ -73,6 +78,12 @@ if [ ! -r $CLPR ]
 		exit 4
 fi
 
+if [ ! -x $FRAMER ]
+	then
+		echo "Can't run frame rate tool!"
+		exit 5
+fi
+
 #echo "leftvid rightvid outfile croptions preset clpr test "
 #echo "${LEFTVID}, ${RIGHTVID}, ${OUTFILE}, ${CROPOPTS}, ${PRESETOPT}, ${CLPR} , ${PREFIX}"
 # Uncomment the one that fits best...
@@ -80,10 +91,27 @@ PRESETOPT="${PRESETOPT:-ultrafast}"
 # veryslow slow fast ultrafast, etc
 ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ${PRESETOPT} "
 
-# find framerate of the videos
+# find frame rate and count of the videos
+# count frames....
+#LFC=$(ffprobe -i ${LEFTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
+#RFC=$(ffprobe -i ${RIGHTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
+#LFR=$(exiftool -VideoFrameRate ${LEFTVID} | awk ' { print $NF} ' )
+#RFR=$(exiftool -VideoFrameRate ${RIGHTVID} | awk ' { print $NF} ' )
 
-LFR=$(exiftool -VideoFrameRate ${LEFTVID} | awk ' { print $NF} ' )
-RFR=$(exiftool -VideoFrameRate ${RIGHTVID} | awk ' { print $NF} ' )
+while read count rate
+do
+	LFC=$count
+	LFR=$rate
+done < <(${FRAMER} ${LEFTVID})
+
+while read count rate
+do
+	RFC=$count
+	RFR=$rate
+done < <(${FRAMER} ${RIGHTVID})
+
+echo "LFC LFR RFC RFR"
+echo "$LFC $LFR $RFC $RFR"
 
 if [ $LFR != $RFR ]
 	then
@@ -138,9 +166,6 @@ case ${RFR} in
 		;;
 esac
 
-# count frames....
-LFC=$(ffprobe -i ${LEFTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
-RFC=$(ffprobe -i ${RIGHTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 
 # get frame offsets...
 FOFF=$(python2 ${CLPR} -c -r ${LFR} ${LEFTVID} ${RIGHTVID} | tail -1 |awk ' { print $1 } ')
