@@ -5,4 +5,5 @@ import cv2
 
 cap = cv2.VideoCapture(sys.argv[1])
 frc = cap.get(7)
-print ("%4.0f\tTotal frames" % (frc) )
+frt = cap.get(5)
+print ("%4.0f\t%3.2f" % (frc,frt) )
