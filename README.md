@@ -13,11 +13,8 @@ Clapperless, originally found here*  http://users.mur.at/ms/projects/clapperless
 (scipy and numby needed for this, python2 based)
 - clap2.py, part of this repo, works with a bit less output.  
 
-OpenCV (for python 2?)
+OpenCV (for python 2, for the frame counter)
 http://opencv.org/
-
-and the excellent exiftool
-http://www.sno.phy.queensu.ca/~phil/exiftool/
 
 Probably can be compressed into a much more workable beast at some point with some help. 
 
