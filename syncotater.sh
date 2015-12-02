@@ -44,19 +44,19 @@ while getopts "htl:r:o:c:p:C:f:" OPTION; do
 done
 shift $(($OPTIND - 1))
 
-if [ ! -r $LEFTVID ]
+if [ ! -r ${LEFTVID} ]
 	then	
 		echo "Can't read left video?"
 		exit 2
 fi
 
-if [ ! -r $RIGHTVID ]
+if [ ! -r ${RIGHTVID} ]
 	then
 		echo "Can't read right video?"
 		exit 2
 fi
 
-if [ -b $OUTFILE ]
+if [ -e ${OUTFILE}-3d.mp4 ]
 	then
 		echo "${OUTFILE}-3d.mp4 exists, cowardly refusing to try overwriting."
 		exit 3
@@ -72,27 +72,24 @@ if [ -b $OUTFILE ]
 		fi	
 fi
 
-if [ ! -r $CLPR ]
+if [ ! -r ${CLPR} ]
 	then
 		echo "Can't find clapperless!"
 		exit 4
 fi
 
-if [ ! -x $FRAMER ]
+if [ ! -x ${FRAMER} ]
 	then
 		echo "Can't run frame rate tool!"
 		exit 5
 fi
 
-#echo "leftvid rightvid outfile croptions preset clpr test "
-#echo "${LEFTVID}, ${RIGHTVID}, ${OUTFILE}, ${CROPOPTS}, ${PRESETOPT}, ${CLPR} , ${PREFIX}"
-# Uncomment the one that fits best...
 PRESETOPT="${PRESETOPT:-ultrafast}"
 # veryslow slow fast ultrafast, etc
 ENCODEROPT=" -strict -2 -acodec aac -vcodec  libx264 -preset ${PRESETOPT} "
 
-# find frame rate and count of the videos
-# count frames....
+# old ways to get frames/rates 
+# 
 #LFC=$(ffprobe -i ${LEFTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 #RFC=$(ffprobe -i ${RIGHTVID} -show_frames -hide_banner |grep coded_picture_number | tail -1 | cut -d= -f2 )
 #LFR=$(exiftool -VideoFrameRate ${LEFTVID} | awk ' { print $NF} ' )
@@ -109,9 +106,6 @@ do
 	RFC=$count
 	RFR=$rate
 done < <(${FRAMER} ${RIGHTVID})
-
-echo "LFC LFR RFC RFR"
-echo "$LFC $LFR $RFC $RFR"
 
 if [ $LFR != $RFR ]
 	then
@@ -196,6 +190,7 @@ if [ ${FOFF} -eq 0 ]  && [ ${LFC} -eq ${RFC} ]
                 		FRONT_TRIM_TIME=$(date -d "1970-1-1 0:00 + 0${FRONT_TRIM} seconds" "+%H:%M:%S.%N")
 
                                 RFCT=$((${RFC} - ${FOFF}))
+
 				LFCT=${RFCT}
                                 if [ ${RFCT} -eq ${LFC} ]
                                         then
