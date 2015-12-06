@@ -1,25 +1,21 @@
-todo 2015112801
+todo 2015120501
 
-Encoding Quality:
-
+3d Quality:
 Clapperless gives sub-frame offsets as decimals, which gives a good indication of the actual suitability of the recordings for 3d. 
 The closer the sub-frame offset is to .5 (scale of .00 to .9999), the worse the quality is.  This is not to say it can not be encoded, just that you're having a clear, mid-frame offset to deal with. Higher frame rates make this more acceptable to deal with in the finished project.   I'd be willing to be that a standard deviation curve could be applied to the numbers to indicate the acceptable ranges.
 
 Without genlocked cameras, it's extremely rare to encouter a .00 offset.  
 
-
 Cleanup of the calculation logic if-then-else ridiculousness:
-
 Making it one bunch of logic to run through for either non-matched start scenario would make things pretty.
-
 
 Offset-crop parameters:
 On super wide angle videos, ala gopros and the like, having a small amount of pixels shifted closer when cropping on both views would likely reduce some of the parallax issues.  Don't overdo it, of course.  
-
 
 Optional half-frame SBS or T/B encoding:
 ala DVD, Bluray, or broadcast 3d.  1920x540 per view, etc.  
 
 
-
+Brightness:
+calculate/adjust brightness [automagically].
 
