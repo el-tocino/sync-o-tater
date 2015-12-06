@@ -1,4 +1,4 @@
-todo 2015120501
+todo 2015120601
 
 3d Quality:
 Clapperless gives sub-frame offsets as decimals, which gives a good indication of the actual suitability of the recordings for 3d. 
@@ -19,3 +19,4 @@ ala DVD, Bluray, or broadcast 3d.  1920x540 per view, etc.
 Brightness:
 calculate/adjust brightness [automagically].
 
+Add functions to determine if ffmpeg is new enough to run hstack instead of pad/overlay silliness.
