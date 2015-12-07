@@ -45,3 +45,5 @@ The terms "left" and "right" are just there to try and keep things straight in t
 The faster the frame rate you shoot, the easier it is to have small offset.
 
 This could probably be extended to handle 360-cam views by a motivated sort. That's just not me right now...maybe someday.
+
+Brotip: recompile a version of ffmpeg for your host with "-O3 -march=native" (as well as on the dependencies).  Makes a 2-10% difference.  Also if you compile a version to just have the input and output formats you want, helps a tiny bit.
