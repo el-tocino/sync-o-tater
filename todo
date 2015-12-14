@@ -17,6 +17,5 @@ ala DVD, Bluray, or broadcast 3d.  1920x540 per view, etc.
 
 
 Brightness:
-calculate/adjust brightness [automagically].
+calculate/adjust brightness [automagically]?
 
-Add functions to determine if ffmpeg is new enough to run hstack instead of pad/overlay silliness.

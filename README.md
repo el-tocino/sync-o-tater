@@ -5,10 +5,10 @@
 A tool to merge two side-by-side videos into one audio-synced 3D monstrosity.  
 (a handy quick reference to taking 3d video is http://www.dashwood3d.com/blog/beginners-guide-to-shooting-stereoscopic-3d/ )
 
-Requires ffmpeg (with h264 support at the moment, can be edited if you want)
+Requires ffmpeg (2.8+, with h264 and hstack)
 https://www.ffmpeg.org/
 
-python (2.[6-7ish], currently)
+python (2.7, currently)
 Clapperless, originally found here*  http://users.mur.at/ms/projects/clapperless/
 (scipy and numby needed for this, python2 based)
 - clap2.py, part of this repo, works with a bit less output.  
@@ -46,4 +46,4 @@ The faster the frame rate you shoot, the easier it is to have small offset.
 
 This could probably be extended to handle 360-cam views by a motivated sort. That's just not me right now...maybe someday.
 
-Brotip: recompile a version of ffmpeg for your host with "-O3 -march=native" (as well as on the dependencies).  Makes a 2-10% difference.  Also if you compile a version to just have the input and output formats you want, helps a tiny bit.
+Brotip: recompile a version of ffmpeg for your host with "-O3 -march=native" (as well as on libx264,yasm, etc...).  Makes a 0-10% difference in quick testing.  Also if you compile a version to just have the input and output formats you want, helps a tiny bit.
