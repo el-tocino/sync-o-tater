@@ -47,8 +47,7 @@ shift $(($OPTIND - 1))
 if [ ! -r ${LEFTVID} ]
 	then	
 		echo "Can't read left video?"
-		exit 2
-fi
+		exit 2 fi
 
 if [ ! -r ${RIGHTVID} ]
 	then
@@ -260,13 +259,13 @@ echo " left args, right args, left crop args, right crop args, encoding options"
 echo "${LTRIMARGS}, ${RTRIMARGS}, ${LCROPARGS}, ${RCROPARGS}, ${ENCODEROPT}" >> $$.out
 
 
-echo "ffmpeg -i ${LEFTVID}  ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} ${OUTFILE}-left.mp4" >> $$.out
-${PREFIX} ffmpeg -i ${LEFTVID} ${LTRIMARGS} ${ENCODEROPT} ${LCROPARGS} ${OUTFILE}-left.mp4
-echo "ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4" >> $$.out
-${PREFIX} ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RCROPARGS} ${OUTFILE}-right.mp4	
+echo "ffmpeg -i ${LEFTVID}  ${LTRIMARGS} ${ENCODEROPT} ${LAUDOPTS} ${LCROPARGS} ${OUTFILE}-left.mp4" >> $$.out
+${PREFIX} ffmpeg -i ${LEFTVID} ${LTRIMARGS} ${ENCODEROPT} ${LAUDOPTS} ${LCROPARGS} ${OUTFILE}-left.mp4
+echo "ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RAUDOPTS} ${RCROPARGS} ${OUTFILE}-right.mp4" >> $$.out
+${PREFIX} ffmpeg -i ${RIGHTVID}  ${RTRIMARGS} ${ENCODEROPT} ${RAUDOPTS} ${RCROPARGS} ${OUTFILE}-right.mp4	
 
-echo ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4 >> $$.out
-${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c2:c1<c1+c3" ${ENCODEROPT} ${OUTFILE}-3d.mp4
+echo ${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v][1:v]hstack=inputs=2[v]; [0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 ${ENCODEROPT} ${OUTFILE}-3d.mp4 >> $$.out
+${PREFIX} ffmpeg -i ${OUTFILE}-left.mp4 -i ${OUTFILE}-right.mp4 -filter_complex "[0:v][1:v]hstack=inputs=2[v]; [0:a][1:a]amerge[a]" -map "[v]" -map "[a]" -ac 2 ${ENCODEROPT} ${OUTFILE}-3d.mp4
 echo "## ${OUTFILE}-3d.mp4 made with Potato! ##"
 
 exit 0
